@@ -48,29 +48,27 @@ $(function(){
         let file = this.files[0];
         let fileReader = new FileReader(); 
         fileReader.readAsDataURL(file);
-        let base64;
         fileReader.onload = function() {
-            base64 = fileReader.result;
+            let base64 = fileReader.result;
+            $.ajax({
+                contentType: "application/json",
+                processData: false,
+                url: "@{FileR}",
+                type: "PUT",
+                data: JSON.stringify({
+                    _filename: file.name, 
+                    _base64: base64
+                }),
+                success: function(result) {
+                    resultEl.textContent = result;
+                    myModal.show();
+                },
+                dataType: "text"
+            });
         }; 
         fileReader.onerror = function() {
             alert(fileReader.error);
         }; 
-        //
-        $.ajax({
-            contentType: "application/json",
-            processData: false,
-            url: "@{FileR}",
-            type: "PUT",
-            data: JSON.stringify({
-                _filename: file.name, 
-                _base64: base64
-            }),
-            success: function(result) {
-                resultEl.textContent = result;
-                myModal.show();
-            },
-            dataType: "text"
-        });
     });
 });
 |]

@@ -15,4 +15,6 @@ getHomeR = defaultLayout $ do
             <a href=@{AddR 5 7}?_accept=application/json>JSON addition
         <p>
             <a href=@{MultiplyR}>AJAX multiplication
+        <p>
+            <a href=@{UploadR}>Upload a file
     |]
