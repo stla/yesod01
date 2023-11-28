@@ -1,0 +1,4 @@
+/              HomeR      GET
+/add/#Int/#Int AddR       GET
+/multiply      MultiplyR  GET
+/operation     OperationR PUT
