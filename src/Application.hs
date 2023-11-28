@@ -6,10 +6,11 @@
 module Application where
 
 import Foundation
-import Yesod.Core
+import Yesod.Core ( mkYesodDispatch )
 
-import Add
-import Home
-import Multiply
+import Add ( getAddR )
+import Home ( getHomeR )
+import Multiply ( putOperationR, getMultiplyR )
+import Upload
 
 mkYesodDispatch "App" resourcesApp

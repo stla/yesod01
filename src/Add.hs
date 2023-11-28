@@ -2,7 +2,7 @@
 {-# LANGUAGE QuasiQuotes       #-}
 module Add where
 
-import Foundation
+import Foundation ( Handler )
 import Yesod.Core
 
 getAddR :: Int -> Int -> Handler TypedContent

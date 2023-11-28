@@ -2,3 +2,5 @@
 /add/#Int/#Int AddR       GET
 /multiply      MultiplyR  GET
 /operation     OperationR PUT
+/upload        UploadR    GET
+/file          FileR      PUT

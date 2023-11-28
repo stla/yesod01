@@ -5,6 +5,7 @@
 module Foundation where
 
 import Yesod.Core
+    ( Yesod, mkYesodData, parseRoutesFile, RenderRoute(renderRoute) )
 import Yesod.Form.Jquery ( YesodJquery )
 
 data App = App
