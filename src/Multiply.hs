@@ -28,6 +28,7 @@ getMultiplyR = defaultLayout $ do
                         <div .modal-header>
                             <h1 .modal-title .fs-5>Multiplication
                         <div .modal-body>
+                            <i>x</i>&times;<i>y</i> = <span id="result"></span>
                         <div .modal-footer>
                             <button type=button .btn .btn-secondary data-bs-dismiss=modal>Close
             <div .container-fluid>
@@ -54,8 +55,8 @@ script = [julius|
 $(function(){
     const myModalEl = document.getElementById("myModal");
     const myModal = new bootstrap.Modal(myModalEl);
-    const modalBody = myModalEl.querySelector(".modal-body");
-    $("#submit").click(function(){
+    const resultEl = myModalEl.querySelector("#result");
+    $("#submit").click(function() {
         $.ajax({
             contentType: "application/json",
             processData: false,
@@ -66,7 +67,7 @@ $(function(){
                 _y: Number($("#y").val())
             }),
             success: function(result) {
-                modalBody.textContent = result;
+                resultEl.textContent = result;
                 myModal.show();
             },
             dataType: "text"
