@@ -5,13 +5,17 @@ module Upload where
 
 import Foundation
 import Yesod.Core
-import Yesod.Form.Jquery (YesodJquery (urlJqueryJs))
+import Yesod.Form.Jquery ( YesodJquery (urlJqueryJs) )
 import GHC.Generics ( Generic )
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Base64 as B64
 import qualified Data.ByteString.Char8 as BC
 import System.IO.Temp ( getCanonicalTemporaryDirectory, createTempDirectory )
 import System.Process
+import Text.Regex (mkRegex, subRegex)
+
+replaceBackslahes :: String -> String
+replaceBackslahes string = subRegex (mkRegex "\\\\") string "/"
 
 base64ToFile :: String -> FilePath -> IO FilePath
 base64ToFile b64string fileName = do
@@ -20,7 +24,7 @@ base64ToFile b64string fileName = do
     dir <- createTempDirectory tmpDir "yesod"
     let filePath = dir ++ "/" ++ fileName
     B.writeFile filePath bstring 
-    return filePath
+    return $ replaceBackslahes dir
 
 data File = File {
     _filename :: String,
@@ -95,9 +99,16 @@ $(function(){
 });
 |]
 
+rCommand :: FilePath -> String
+rCommand outputDir = 
+    "rmarkdown::render(\"static/R/report.Rmd\",output_dir=\"" ++ outputDir ++ "\")"
+
 putFileR :: Handler String
 putFileR = do
-    (exitcode, stdout, stderr) <- liftIO $ readProcessWithExitCode "Rscript" ["-e", "getwd()"] ""
-    liftIO $ print (exitcode, stdout, stderr)
     file <- requireCheckJsonBody :: Handler File
-    liftIO $ b64FileToFile file 
+    dir <- liftIO $ b64FileToFile file 
+    liftIO $ print dir
+    (exitcode, stdout, stderr) <- 
+        liftIO $ readProcessWithExitCode "Rscript" ["-e", rCommand dir] ""
+    liftIO $ print (exitcode, stdout, stderr)
+    return dir
