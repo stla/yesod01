@@ -85,10 +85,38 @@ getUploadR = defaultLayout $ do
     addScript $ StaticR bootstrap_5_3_2_js_bootstrap_bundle_min_js
     addScript $ StaticR _DataTables_1_13_8_datatables_min_js
     addScript $ StaticR _PapaParse_papaparse_min_js
+    addScript $ StaticR _SheetJS_xlsx_core_min_js
     toWidget script
 
 script :: JavascriptUrl (Route App)
 script = [julius|
+function papaParse(csv) {
+    Papa.parse(csv, {
+        header: true,
+        skipEmptyLines: true,
+        dynamicTyping: true,
+        complete: function(results) {
+            if(results.errors.length != 0) {
+                alert("Something is wrong with this CSV file.");
+                console.log("Errors:", results.errors);
+                throw new Error("Something is wrong with this CSV file.");
+            }
+            let headers = "";
+            for(let colname of results.meta.fields) {
+                headers += "<th>" + colname + "</th>";
+            }
+            $('#table thead tr').append(headers);
+            let columns = [];
+            for(let colname of results.meta.fields) {
+                columns.push({data: colname});
+            }
+            $('#table').DataTable({
+                data: results.data,
+                columns: columns
+            });              
+        }
+    });
+}
 $(function(){
     const myModalEl = document.getElementById("myModal");
     const myModal = new bootstrap.Modal(myModalEl);
@@ -99,32 +127,31 @@ $(function(){
         let file = this.files[0];
         // --------------------------------------------------------------------
         let extension = file.name.split('.').pop().toLowerCase();
-        if(extension === "csv") {
-			Papa.parse(file, {
-				header: true,
-				skipEmptyLines: true,
-				dynamicTyping: true,
-				complete: function(results) {
-                    if(results.errors.length != 0) {
-                        alert("Something is wrong with this CSV file.");
-    					console.log("Errors:", results.errors);
-                        throw new Error("Something is wrong with this CSV file.");
-                    }
-                    let headers = "";
-                    for(let colname of results.meta.fields) {
-                        headers += "<th>" + colname + "</th>";
-                    }
-                    $('#table thead tr').append(headers);
-                    let columns = [];
-                    for(let colname of results.meta.fields) {
-                        columns.push({data: colname});
-                    }
-                    $('#table').DataTable({
-                        data: results.data,
-                        columns: columns
-                    });              
-                }
-            });
+        let XLSXasCSV;
+        if(extension === "xlsx") {
+            let reader = new FileReader();
+			reader.onload = function(e) {
+				let workbook;
+				try {
+					workbook = XLSX.read(reader.result, {
+						type: "binary"
+					});
+				} catch (err) {
+					alert("Something is wrong with this XLSX file.");
+					throw new Error(err);
+				}
+				let sheetNames = workbook.SheetNames;
+                let sheet1 = sheetNames[0];
+                XLSXasCSV = XLSX.utils.sheet_to_csv(workbook.Sheets[sheet1]);
+                papaParse(XLSXasCSV);
+            }
+            reader.onerror = function(err) {
+				alert("I can't read this XLSX file!");
+				throw new Error(err);
+			};
+			reader.readAsArrayBuffer(file);
+        } else if(extension === "csv") {
+            papaParse(file);
         }
         // --------------------------------------------------------------------
         let fileReader = new FileReader(); 
