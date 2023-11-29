@@ -12,6 +12,7 @@ import qualified Data.ByteString.Base64 as B64
 import qualified Data.ByteString.Char8 as BC
 import System.IO.Temp ( getCanonicalTemporaryDirectory, createTempDirectory )
 import System.Process ( readProcessWithExitCode )
+import System.Exit ( ExitCode(ExitSuccess) )
 import Text.Regex (mkRegex, subRegex)
 import qualified Data.Text as T
 import Network.Mime (defaultMimeLookup)
@@ -60,9 +61,9 @@ getUploadR = defaultLayout $ do
                 <div .modal-dialog .modal-dialog-centered">
                     <div .modal-content>
                         <div .modal-header>
-                            <h1 .modal-title .fs-5>Upload successful
+                            <h1 .modal-title .fs-5>
                         <div .modal-body>
-                            <i>File saved to: </i> <span id="result"></span>
+                            <span #result>
                         <div .modal-footer>
                             <button type=button .btn .btn-secondary data-bs-dismiss=modal>Close
             <div .container-fluid>
@@ -92,6 +93,7 @@ $(function(){
     const myModalEl = document.getElementById("myModal");
     const myModal = new bootstrap.Modal(myModalEl);
     const resultEl = myModalEl.querySelector("#result");
+    const titleEl = myModalEl.querySelector(".modal-title");
     $("#file").on("change", function() {
         $("#spinner").show();
         let file = this.files[0];
@@ -103,9 +105,11 @@ $(function(){
 				skipEmptyLines: true,
 				dynamicTyping: true,
 				complete: function(results) {
-					console.log("Dataframe:", JSON.stringify(results.data));
-					console.log("Column names:", results.meta.fields);
-					console.log("Errors:", results.errors);
+                    if(results.errors.length != 0) {
+                        alert("Something is wrong with this CSV file.");
+    					console.log("Errors:", results.errors);
+                        throw new Error("Something is wrong with this CSV file.");
+                    }
                     let headers = "";
                     for(let colname of results.meta.fields) {
                         headers += "<th>" + colname + "</th>";
@@ -127,7 +131,6 @@ $(function(){
         fileReader.readAsDataURL(file);
         fileReader.onload = function() {
             let base64 = fileReader.result.split(",")[1];
-            console.log(base64);
             $.ajax({
                 contentType: "application/json; charset=UTF-8",
                 processData: false,
@@ -137,11 +140,21 @@ $(function(){
                     _filename: file.name, 
                     _base64: base64
                 }),
-                success: function(result) {
+                success: function(string) {
                     $("#spinner").hide();
-                    resultEl.textContent = "result";
+                    let error_base64 = string.split("*::*::*::*::*");
+                    let error = error_base64[0];
+                    if(error === "") {
+                        titleEl.textContent = "Success";
+                        resultEl.textContent = 
+                            "The report has been generated.";
+                        let base64 = error_base64[1];
+                        $('#download').attr("href", base64).show();
+                    } else {
+                        titleEl.textContent = "An error occured"
+                        resultEl.textContent = error;
+                    }
                     myModal.show();
-                    $('#download').attr("href", result).show();
                 },
                 dataType: "text"
             });
@@ -153,19 +166,24 @@ $(function(){
 });
 |]
 
+quote :: String -> String
+quote x = "\"" ++ x ++ "\""
+
 rCommand :: FilePath -> String -> String
 rCommand outputDir fileName = 
-    "rmarkdown::render(\"static/R/report.Rmd\",output_dir=\"" ++ 
-        outputDir ++ "\",params=list(upload=\"" ++ fileName ++ 
-        "\",tmpDir=\"" ++ outputDir ++ "\"))"
+    "rmarkdown::render(\"static/R/report.Rmd\",output_dir=" ++ 
+        quote outputDir ++ ",params=list(upload=" ++ quote fileName ++ 
+        ",tmpDir=" ++ quote outputDir ++ "))"
 
 putFileR :: Handler String
 putFileR = do
     file <- requireCheckJsonBody :: Handler File
     let fileName = _filename file
     dir <- liftIO $ b64FileToFile file 
-    liftIO $ print dir
     (exitcode, stdout, stderr) <- 
         liftIO $ readProcessWithExitCode "Rscript" ["-e", rCommand dir fileName] ""
     liftIO $ print (exitcode, stdout, stderr)
-    liftIO $ fileToBase64 (dir ++ "/report.html")
+    base64 <- liftIO $ fileToBase64 (dir ++ "/report.html")
+    let err = if exitcode == ExitSuccess then "" else stderr
+    let string = err ++ "*::*::*::*::*" ++ base64
+    return string
