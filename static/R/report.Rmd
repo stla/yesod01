@@ -4,12 +4,16 @@ author: "Stéphane Laurent"
 date: "2023-11-29"
 output: html_document
 params:
-  csv: NA
+  tmpDir: NA
+  upload: NA
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+The file `r params$upload` has been uploaded.
+It is in folder `r params$tmpDir`.
 
 ## R Markdown
 

@@ -67,9 +67,10 @@ getUploadR = defaultLayout $ do
             <div .container-fluid>
                 <div .row>
                     <input #file type=file .form-control>
+                <br>
                 <div #spinner .spinner-border .m-5 role=status style=display:none>
                     <span .visually-hidden>Loading...
-                <a #download download=report.html>
+                <a #download .btn .btn-primary download=report.html style=display:none>Download
     |]
     addScript $ StaticR bootstrap_5_3_2_js_bootstrap_bundle_min_js
     toWidget script
@@ -101,7 +102,7 @@ $(function(){
                     $("#spinner").hide();
                     resultEl.textContent = "result";
                     myModal.show();
-                    $('#download').attr("href", result).text("Download");
+                    $('#download').attr("href", result).show();
                 },
                 dataType: "text"
             });
@@ -113,16 +114,19 @@ $(function(){
 });
 |]
 
-rCommand :: FilePath -> String
-rCommand outputDir = 
-    "rmarkdown::render(\"static/R/report.Rmd\",output_dir=\"" ++ outputDir ++ "\")"
+rCommand :: FilePath -> String -> String
+rCommand outputDir fileName = 
+    "rmarkdown::render(\"static/R/report.Rmd\",output_dir=\"" ++ 
+        outputDir ++ "\",params=list(upload=\"" ++ fileName ++ 
+        "\",tmpDir=\"" ++ outputDir ++ "\"))"
 
 putFileR :: Handler String
 putFileR = do
     file <- requireCheckJsonBody :: Handler File
+    let fileName = _filename file
     dir <- liftIO $ b64FileToFile file 
     liftIO $ print dir
     (exitcode, stdout, stderr) <- 
-        liftIO $ readProcessWithExitCode "Rscript" ["-e", rCommand dir] ""
+        liftIO $ readProcessWithExitCode "Rscript" ["-e", rCommand dir fileName] ""
     liftIO $ print (exitcode, stdout, stderr)
     liftIO $ fileToBase64 (dir ++ "/report.html")
