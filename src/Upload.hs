@@ -32,6 +32,9 @@ b64FileToFile file = base64ToFile (_base64 file) (_filename file)
 
 getUploadR :: Handler Html
 getUploadR = defaultLayout $ do
+    toWidgetHead [hamlet|
+        <meta charset="UTF-8">
+    |]
     setTitle "Upload"
     addStylesheetRemote "https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
     getYesod >>= addScriptEither . urlJqueryJs
@@ -41,9 +44,9 @@ getUploadR = defaultLayout $ do
                 <div .modal-dialog .modal-dialog-centered">
                     <div .modal-content>
                         <div .modal-header>
-                            <h1 .modal-title .fs-5>Multiplication
+                            <h1 .modal-title .fs-5>Upload successful
                         <div .modal-body>
-                            <i>x</i>&times;<i>y</i> = <span id="result"></span>
+                            <i>File saved to: </i> <span id="result"></span>
                         <div .modal-footer>
                             <button type=button .btn .btn-secondary data-bs-dismiss=modal>Close
             <div .container-fluid>
@@ -64,9 +67,10 @@ $(function(){
         let fileReader = new FileReader(); 
         fileReader.readAsDataURL(file);
         fileReader.onload = function() {
-            let base64 = fileReader.result;
+            let base64 = fileReader.result.split(",")[1];
+            console.log(base64);
             $.ajax({
-                contentType: "application/json",
+                contentType: "application/json; charset=UTF-8",
                 processData: false,
                 url: "@{FileR}",
                 type: "PUT",
