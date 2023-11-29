@@ -72,6 +72,11 @@ getUploadR = defaultLayout $ do
                 <div #spinner .spinner-border .m-5 role=status style=display:none>
                     <span .visually-hidden>Loading...
                 <a #download .btn .btn-primary download=report.html style=display:none>Download
+                <br>
+                <table #table .display .border .compact .striped>
+                    <thead>
+                        <tr role=row>
+                    <tbody>
     |]
     addScript $ StaticR jQuery_jquery_3_7_1_min_js
     addScript $ StaticR bootstrap_5_3_2_js_bootstrap_bundle_min_js
@@ -99,6 +104,19 @@ $(function(){
 					console.log("Dataframe:", JSON.stringify(results.data));
 					console.log("Column names:", results.meta.fields);
 					console.log("Errors:", results.errors);
+                    let headers = "";
+                    for(let colname of results.meta.fields) {
+                        headers += "<th>" + colname + "</th>";
+                    }
+                    $('#table thead tr').append(headers);
+                    let columns = [];
+                    for(let colname of results.meta.fields) {
+                        columns.push({data: colname});
+                    }
+                    $('#table').DataTable({
+                        data: results.data,
+                        columns: columns
+                    });              
                 }
             });
         }
