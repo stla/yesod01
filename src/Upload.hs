@@ -73,7 +73,8 @@ getUploadR = defaultLayout $ do
                 <h5>The data should contain at least two numeric columns.
                 <br>
                 <div .row>
-                    <input #file type=file .form-control .btn .btn-info>
+                    <div .col-12>
+                        <input #file type=file .form-control .btn .btn-info>
                 <br>
                 <div #spinner .spinner-border .m-5 role=status style=display:none>
                     <span .visually-hidden>Loading...
