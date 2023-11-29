@@ -5,6 +5,7 @@ dependencies:
 - base
 - yesod-core
 - yesod-form
+- yesod-static
 - temporary
 - bytestring
 - base64-bytestring
