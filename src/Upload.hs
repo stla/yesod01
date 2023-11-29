@@ -6,17 +6,17 @@ module Upload where
 import Foundation
 import Yesod.Core
 -- import Yesod.Form.Jquery ( YesodJquery (urlJqueryJs) )
-import GHC.Generics ( Generic )
-import qualified Data.ByteString as B
+import GHC.Generics                     ( Generic )
+import qualified Data.ByteString        as B
 import qualified Data.ByteString.Base64 as B64
-import qualified Data.ByteString.Char8 as BC
-import System.IO.Temp ( getCanonicalTemporaryDirectory, createTempDirectory )
-import System.Process ( readProcessWithExitCode )
-import System.Exit ( ExitCode(ExitSuccess) )
-import Text.Regex (mkRegex, subRegex)
+import qualified Data.ByteString.Char8  as BC
 import qualified Data.Text as T
-import Network.Mime (defaultMimeLookup)
-import Control.Monad (when)
+import Network.Mime                     ( defaultMimeLookup )
+import System.IO.Temp                   ( getCanonicalTemporaryDirectory, createTempDirectory )
+import System.Process                   ( readProcessWithExitCode )
+import System.Exit                      ( ExitCode(ExitSuccess) )
+import Text.Regex                       ( mkRegex, subRegex )
+import Control.Monad                    ( when )
 
 replaceBackslahes :: String -> String
 replaceBackslahes string = subRegex (mkRegex "\\\\") string "/"
@@ -208,8 +208,8 @@ putFileR = do
     file <- requireCheckJsonBody :: Handler File
     let fileName = _filename file
     dir <- liftIO $ b64FileToFile file 
-    (exitcode, stdout, stderr) <- 
-        liftIO $ readProcessWithExitCode "Rscript" ["-e", rCommand dir fileName] ""
+    (exitcode, stdout, stderr) <- liftIO $ 
+        readProcessWithExitCode "Rscript" ["-e", rCommand dir fileName] ""
     liftIO $ print (exitcode, stdout, stderr)
     when (exitcode /= ExitSuccess) $
         liftIO $ writeFile (dir ++ "/report.html") "" 
