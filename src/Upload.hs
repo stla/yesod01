@@ -67,6 +67,8 @@ getUploadR = defaultLayout $ do
             <div .container-fluid>
                 <div .row>
                     <input #file type=file .form-control>
+                <div #spinner .spinner-border .m-5 role=status style=display:none>
+                    <span .visually-hidden>Loading...
                 <a #download download=report.html>
     |]
     addScript $ StaticR bootstrap_5_3_2_js_bootstrap_bundle_min_js
@@ -79,6 +81,7 @@ $(function(){
     const myModal = new bootstrap.Modal(myModalEl);
     const resultEl = myModalEl.querySelector("#result");
     $("#file").on("change", function() {
+        $("#spinner").show();
         let file = this.files[0];
         let fileReader = new FileReader(); 
         fileReader.readAsDataURL(file);
@@ -95,6 +98,7 @@ $(function(){
                     _base64: base64
                 }),
                 success: function(result) {
+                    $("#spinner").hide();
                     resultEl.textContent = "result";
                     myModal.show();
                     $('#download').attr("href", result).text("Download");
