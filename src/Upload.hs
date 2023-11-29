@@ -55,7 +55,7 @@ getUploadR = defaultLayout $ do
                 <div .row>
                     <input #file type=file .form-control>
     |]
-    addScriptRemote "https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+    addScript $ StaticR bootstrap_5_3_2_js_bootstrap_bundle_min_js
     toWidget script
 
 script :: JavascriptUrl (Route App)
