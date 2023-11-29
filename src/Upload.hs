@@ -11,6 +11,7 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Base64 as B64
 import qualified Data.ByteString.Char8 as BC
 import System.IO.Temp ( getCanonicalTemporaryDirectory, createTempDirectory )
+import System.Process
 
 base64ToFile :: String -> FilePath -> IO FilePath
 base64ToFile b64string fileName = do
@@ -96,5 +97,7 @@ $(function(){
 
 putFileR :: Handler String
 putFileR = do
+    (exitcode, stdout, stderr) <- liftIO $ readProcessWithExitCode "Rscript" ["-e", "getwd()"] ""
+    liftIO $ print (exitcode, stdout, stderr)
     file <- requireCheckJsonBody :: Handler File
     liftIO $ b64FileToFile file 
