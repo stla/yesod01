@@ -73,7 +73,9 @@ getUploadR = defaultLayout $ do
                     <span .visually-hidden>Loading...
                 <a #download .btn .btn-primary download=report.html style=display:none>Download
                 <br>
-                <table #table .display .border .compact .striped>
+                <br>
+                <br>
+                <table #table .display .cell-border .compact .stripe>
                     <thead>
                         <tr role=row>
                     <tbody>
