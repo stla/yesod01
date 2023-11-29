@@ -16,6 +16,7 @@ import System.Exit ( ExitCode(ExitSuccess) )
 import Text.Regex (mkRegex, subRegex)
 import qualified Data.Text as T
 import Network.Mime (defaultMimeLookup)
+import Control.Monad (when)
 
 replaceBackslahes :: String -> String
 replaceBackslahes string = subRegex (mkRegex "\\\\") string "/"
@@ -119,15 +120,14 @@ function papaParse(csv) {
 }
 $(function(){
     const myModalEl = document.getElementById("myModal");
-    const myModal = new bootstrap.Modal(myModalEl);
-    const resultEl = myModalEl.querySelector("#result");
-    const titleEl = myModalEl.querySelector(".modal-title");
+    const myModal   = new bootstrap.Modal(myModalEl);
+    const resultEl  = myModalEl.querySelector("#result");
+    const titleEl   = myModalEl.querySelector(".modal-title");
     $("#file").on("change", function() {
         $("#spinner").show();
         let file = this.files[0];
-        // --------------------------------------------------------------------
         let extension = file.name.split('.').pop().toLowerCase();
-        let XLSXasCSV;
+        // --------------------------------------------------------------------
         if(extension === "xlsx") {
             let reader = new FileReader();
 			reader.onload = function(e) {
@@ -136,13 +136,14 @@ $(function(){
 					workbook = XLSX.read(reader.result, {
 						type: "binary"
 					});
-				} catch (err) {
+				} catch(err) {
 					alert("Something is wrong with this XLSX file.");
 					throw new Error(err);
 				}
 				let sheetNames = workbook.SheetNames;
                 let sheet1 = sheetNames[0];
-                XLSXasCSV = XLSX.utils.sheet_to_csv(workbook.Sheets[sheet1]);
+                let XLSXasCSV = 
+                    XLSX.utils.sheet_to_csv(workbook.Sheets[sheet1]);
                 papaParse(XLSXasCSV);
             }
             reader.onerror = function(err) {
@@ -150,7 +151,7 @@ $(function(){
 				throw new Error(err);
 			};
 			reader.readAsArrayBuffer(file);
-        } else if(extension === "csv") {
+        } else if(extension === "csv" || extension === "tsv") {
             papaParse(file);
         }
         // --------------------------------------------------------------------
@@ -210,6 +211,8 @@ putFileR = do
     (exitcode, stdout, stderr) <- 
         liftIO $ readProcessWithExitCode "Rscript" ["-e", rCommand dir fileName] ""
     liftIO $ print (exitcode, stdout, stderr)
+    when (exitcode /= ExitSuccess) $
+        liftIO $ writeFile (dir ++ "/report.html") "" 
     base64 <- liftIO $ fileToBase64 (dir ++ "/report.html")
     let err = if exitcode == ExitSuccess then "" else stderr
     let string = err ++ "*::*::*::*::*" ++ base64

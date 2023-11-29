@@ -9,8 +9,39 @@ params:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE)
+library(readxl)
+library(ggplot2)
 ```
 
 The file `r params$upload` has been uploaded.
 It is in folder `r params$tmpDir`.
+
+```{r importFile}
+fl <- file.path(params$tmpDir, params$upload)
+ext <- tolower(tools::file_ext(params$upload))
+dat <- if(ext == "csv") { 
+  read.csv(fl, check.names = FALSE)
+} else if(ext == "xlsx") read_xlsx(fl, sheet = 1L)
+ok <- !is.null(dat)
+```
+
+```{r numericColumns, eval=ok}
+numCols <- vapply(names(dat), function(colname) {
+  is.numeric(dat[[colname]])
+}, FUN.VALUE = logical(1L))
+n_numCols <- sum(numCols)
+if(n_numCols >= 2L) {
+  numColsIndices <- which(numCols)[c(1L, 2L)]
+  colNames <- names(dat)[numColsIndices]
+} else {
+  colNames <- NULL
+}
+ok <- !is.null(colNames)
+```
+
+```{r plot, eval=ok, fig.width=7, fig.height=5}
+ggplot(dat, aes(x = .data[[colNames[1L]]], y = .data[[colNames[2L]]])) + 
+  geom_point() + geom_smooth(method = "lm")
+```
+
