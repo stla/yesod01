@@ -7,12 +7,10 @@ module Foundation where
 import Yesod.Core
     --( Yesod, mkYesodData, parseRoutesFile, RenderRoute(renderRoute) )
 import Yesod.Form.Jquery ( YesodJquery )
-import Yesod.Static
+import Yesod.Static ( staticFiles, Static )
 staticFiles "static"
 
-data App = App
-    { getStatic :: Static
-    }
+data App = App { getStatic :: Static }
 
 mkYesodData "App" $(parseRoutesFile "routes.yesodroutes")
 

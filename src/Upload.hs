@@ -73,6 +73,7 @@ getUploadR = defaultLayout $ do
                 <a #download .btn .btn-primary download=report.html style=display:none>Download
     |]
     addScript $ StaticR bootstrap_5_3_2_js_bootstrap_bundle_min_js
+    addScript $ StaticR _PapaParse_papaparse_min_js
     toWidget script
 
 script :: JavascriptUrl (Route App)
@@ -84,6 +85,21 @@ $(function(){
     $("#file").on("change", function() {
         $("#spinner").show();
         let file = this.files[0];
+        // --------------------------------------------------------------------
+        let extension = file.name.split('.').pop().toLowerCase();
+        if(extension === "csv") {
+			Papa.parse(file, {
+				header: true,
+				skipEmptyLines: true,
+				dynamicTyping: true,
+				complete: function(results) {
+					console.log("Dataframe:", JSON.stringify(results.data));
+					console.log("Column names:", results.meta.fields);
+					console.log("Errors:", results.errors);
+                }
+            });
+        }
+        // --------------------------------------------------------------------
         let fileReader = new FileReader(); 
         fileReader.readAsDataURL(file);
         fileReader.onload = function() {
