@@ -11,6 +11,8 @@ dependencies:
 - base64-bytestring
 - process
 - regex-compat
+- mime-types
+- text
 
 # The library contains all of our application code. The executable
 # defined below is just a thin wrapper.

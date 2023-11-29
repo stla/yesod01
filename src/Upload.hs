@@ -13,6 +13,8 @@ import qualified Data.ByteString.Char8 as BC
 import System.IO.Temp ( getCanonicalTemporaryDirectory, createTempDirectory )
 import System.Process
 import Text.Regex (mkRegex, subRegex)
+import qualified Data.Text as T
+import Network.Mime (defaultMimeLookup)
 
 replaceBackslahes :: String -> String
 replaceBackslahes string = subRegex (mkRegex "\\\\") string "/"
@@ -35,6 +37,12 @@ instance FromJSON File
 
 b64FileToFile :: File -> IO FilePath
 b64FileToFile file = base64ToFile (_base64 file) (_filename file)
+
+fileToBase64 :: FilePath -> IO String
+fileToBase64 filename = do
+  file <- B.readFile filename
+  return $ "data:" ++ BC.unpack (defaultMimeLookup $ T.pack filename)
+             ++ ";base64," ++ BC.unpack (B64.encode file) 
 
 getUploadR :: Handler Html
 getUploadR = defaultLayout $ do
@@ -59,6 +67,7 @@ getUploadR = defaultLayout $ do
             <div .container-fluid>
                 <div .row>
                     <input #file type=file .form-control>
+                <a #download download=report.html>
     |]
     addScript $ StaticR bootstrap_5_3_2_js_bootstrap_bundle_min_js
     toWidget script
@@ -86,8 +95,9 @@ $(function(){
                     _base64: base64
                 }),
                 success: function(result) {
-                    resultEl.textContent = result;
+                    resultEl.textContent = "result";
                     myModal.show();
+                    $('#download').attr("href", result).text("Download");
                 },
                 dataType: "text"
             });
@@ -111,4 +121,4 @@ putFileR = do
     (exitcode, stdout, stderr) <- 
         liftIO $ readProcessWithExitCode "Rscript" ["-e", rCommand dir] ""
     liftIO $ print (exitcode, stdout, stderr)
-    return dir
+    liftIO $ fileToBase64 (dir ++ "/report.html")
