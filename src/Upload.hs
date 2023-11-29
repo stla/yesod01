@@ -12,12 +12,13 @@ import qualified Data.ByteString.Base64 as B64
 import qualified Data.ByteString.Char8 as BC
 import System.IO.Temp ( getCanonicalTemporaryDirectory )
 
-base64ToFile :: String -> FilePath -> IO ()
+base64ToFile :: String -> FilePath -> IO FilePath
 base64ToFile b64string fileName = do
     let bstring = B64.decodeLenient (BC.pack b64string)
     tmpDir <- getCanonicalTemporaryDirectory
     let filePath = tmpDir ++ "/" ++ fileName
     B.writeFile filePath bstring 
+    return filePath
 
 data File = File {
     _filename :: String,
@@ -25,6 +26,9 @@ data File = File {
 } deriving (Show, Generic)
 
 instance FromJSON File
+
+b64FileToFile :: File -> IO FilePath
+b64FileToFile file = base64ToFile (_base64 file) (_filename file)
 
 getUploadR :: Handler Html
 getUploadR = defaultLayout $ do
@@ -87,4 +91,4 @@ $(function(){
 putFileR :: Handler String
 putFileR = do
     file <- requireCheckJsonBody :: Handler File
-    return $ show $ _filename file
+    liftIO $ b64FileToFile file 
