@@ -7,12 +7,23 @@ import Foundation
 import Yesod.Core
 import Yesod.Form.Jquery (YesodJquery (urlJqueryJs))
 import GHC.Generics ( Generic )
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Base64 as B64
+import qualified Data.ByteString.Char8 as BC
+import System.IO.Temp ( getCanonicalTemporaryDirectory )
+
+base64ToFile :: String -> FilePath -> IO ()
+base64ToFile b64string fileName = do
+    let bstring = B64.decodeLenient (BC.pack b64string)
+    tmpDir <- getCanonicalTemporaryDirectory
+    let filePath = tmpDir ++ "/" ++ fileName
+    B.writeFile filePath bstring 
 
 data File = File {
     _filename :: String,
     _base64   :: String
 } deriving (Show, Generic)
- 
+
 instance FromJSON File
 
 getUploadR :: Handler Html
