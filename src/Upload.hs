@@ -5,13 +5,13 @@ module Upload where
 
 import Foundation
 import Yesod.Core
-import Yesod.Form.Jquery ( YesodJquery (urlJqueryJs) )
+-- import Yesod.Form.Jquery ( YesodJquery (urlJqueryJs) )
 import GHC.Generics ( Generic )
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Base64 as B64
 import qualified Data.ByteString.Char8 as BC
 import System.IO.Temp ( getCanonicalTemporaryDirectory, createTempDirectory )
-import System.Process
+import System.Process ( readProcessWithExitCode )
 import Text.Regex (mkRegex, subRegex)
 import qualified Data.Text as T
 import Network.Mime (defaultMimeLookup)
@@ -52,7 +52,8 @@ getUploadR = defaultLayout $ do
     |]
     setTitle "Upload"
     addStylesheet $ StaticR bootstrap_5_3_2_css_bootstrap_min_css
-    getYesod >>= addScriptEither . urlJqueryJs
+    addStylesheet $ StaticR _DataTables_1_13_8_datatables_min_css
+    -- getYesod >>= addScriptEither . urlJqueryJs
     [whamlet|
         <body>
             <div #myModal .modal .fade aria-hidden aria-labelledby=myModalLabel tabindex=-1>
@@ -72,7 +73,9 @@ getUploadR = defaultLayout $ do
                     <span .visually-hidden>Loading...
                 <a #download .btn .btn-primary download=report.html style=display:none>Download
     |]
+    addScript $ StaticR jQuery_jquery_3_7_1_min_js
     addScript $ StaticR bootstrap_5_3_2_js_bootstrap_bundle_min_js
+    addScript $ StaticR _DataTables_1_13_8_datatables_min_js
     addScript $ StaticR _PapaParse_papaparse_min_js
     toWidget script
 

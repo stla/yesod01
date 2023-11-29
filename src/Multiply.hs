@@ -5,7 +5,7 @@ module Multiply where
 
 import Foundation
 import Yesod.Core
-import Yesod.Form.Jquery (YesodJquery (urlJqueryJs))
+-- import Yesod.Form.Jquery (YesodJquery (urlJqueryJs))
 import GHC.Generics ( Generic )
 
 data Operation = Operation {
@@ -19,7 +19,7 @@ getMultiplyR :: Handler Html
 getMultiplyR = defaultLayout $ do
     setTitle "Multiplication"
     addStylesheetRemote "https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-    getYesod >>= addScriptEither . urlJqueryJs
+    -- getYesod >>= addScriptEither . urlJqueryJs
     [whamlet|
         <body>
             <div #myModal .modal .fade aria-hidden aria-labelledby=myModalLabel tabindex=-1>
@@ -47,6 +47,7 @@ getMultiplyR = defaultLayout $ do
                 <div>
                     <button #submit type=button .btn .btn-primary>Calculate <i>x&times;y</i>
     |]
+    addScript $ StaticR jQuery_jquery_3_7_1_min_js
     addScriptRemote "https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
     toWidget script
 
