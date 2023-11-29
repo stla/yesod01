@@ -10,13 +10,14 @@ import GHC.Generics ( Generic )
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Base64 as B64
 import qualified Data.ByteString.Char8 as BC
-import System.IO.Temp ( getCanonicalTemporaryDirectory )
+import System.IO.Temp ( getCanonicalTemporaryDirectory, createTempDirectory )
 
 base64ToFile :: String -> FilePath -> IO FilePath
 base64ToFile b64string fileName = do
     let bstring = B64.decodeLenient (BC.pack b64string)
     tmpDir <- getCanonicalTemporaryDirectory
-    let filePath = tmpDir ++ "/" ++ fileName
+    dir <- createTempDirectory tmpDir "yesod"
+    let filePath = dir ++ "/" ++ fileName
     B.writeFile filePath bstring 
     return filePath
 
