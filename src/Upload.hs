@@ -68,13 +68,16 @@ getUploadR = defaultLayout $ do
                         <div .modal-footer>
                             <button type=button .btn .btn-secondary data-bs-dismiss=modal>Close
             <div .container-fluid>
+                <h3>Upload a CSV file or a XLSX file.
+                <h5 .text-body-secondary>If you upload a XLSX file, the data from the first sheet will be extracted.
+                <h5>The data should contain at least two numeric columns.
+                <br>
                 <div .row>
-                    <input #file type=file .form-control>
+                    <input #file type=file .form-control .btn .btn-info>
                 <br>
                 <div #spinner .spinner-border .m-5 role=status style=display:none>
                     <span .visually-hidden>Loading...
-                <a #download .btn .btn-primary download=report.html style=display:none>Download
-                <br>
+                <a #download .btn .btn-primary download=report.html style=display:none>Download report
                 <br>
                 <br>
                 <table #table .table-striped .table-bordered .table-hover>
