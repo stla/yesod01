@@ -75,7 +75,7 @@ getUploadR = defaultLayout $ do
                 <br>
                 <br>
                 <br>
-                <table #table .display .cell-border .compact .stripe>
+                <table #table .table-striped .table-bordered .table-hover>
                     <thead>
                         <tr role=row>
                     <tbody>
