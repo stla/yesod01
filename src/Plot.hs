@@ -70,11 +70,11 @@ getPlotR = defaultLayout $ do
             <img src=./static/images/haskell.png style=float:right;margin:10px;width:100px;>
             <div .container-fluid>
                 $# TABS -------------------------------------------------------
-                <ul .nav .nav-tabs>
+                <ul .nav .nav-tabs role=tablist>
                     <li .nav-item role=presentation>
                         <button #data-tab .nav-link .active data-bs-toggle=tab data-bs-target=#data-tab-pane type=button role=tab aria-controls=data-tab-pane aria-selected=true>Data
                     <li .nav-item role=presentation>
-                        <button #plot-tab .nav-link .active data-bs-toggle=tab data-bs-target=#plot-tab-pane type=button role=tab aria-controls=plot-tab-pane aria-selected=true>Plot
+                        <button #plot-tab .nav-link data-bs-toggle=tab data-bs-target=#plot-tab-pane type=button role=tab aria-controls=plot-tab-pane aria-selected=false>Plot
                 $# TABS CONTENTS ----------------------------------------------
                 <div #tabContent .tab-content>
                     $# DATA TAB -----------------------------------------------
@@ -82,13 +82,12 @@ getPlotR = defaultLayout $ do
                         <div .row>
                             $# SIDEBAR ----------------------------------------
                             <div .col-4>
-                                <div #sidebarData .offcanvas .offcanvas-start .show .text-bg-dark tabindex=-1 aria-labelledby=sidebarDataTitle>
-                                    <div .offcanvas-header.>
-                                        <h5 #sidebarDataTitle .offcanvas-title>Upload data
-                                    <div .offcanvas-body>
-                                        <h6>Upload a CSV file or a XLSX file.
-                                        <h6 .text-body-secondary>If you upload a XLSX file, the data from the first sheet will be extracted.
-                                        <br>
+                                <div #sidebarData .sidebar .card .text-bg-dark tabindex=-1 aria-labelledby=sidebarDataTitle>
+                                    <div .sidebar-header .card-body>
+                                        <h5 #sidebarDataTitle .card-title>Upload data
+                                    <div .sidebar-body .card-body>
+                                        <h6 .card-text>Upload a CSV file or a XLSX file.
+                                        <p .card-text style=font-style:italic;>If you upload a XLSX file, the data from the first sheet will be extracted.
                                         <input #file type=file .form-control .btn .btn-info>
                             $# TABLE ------------------------------------------
                             <div .col-8>
@@ -101,10 +100,10 @@ getPlotR = defaultLayout $ do
                         <div .row>
                             $# SIDEBAR ----------------------------------------
                             <div .col-4>
-                                <div #sidebarPlot .offcanvas .offcanvas-start .show .text-bg-dark tabindex=-1 aria-labelledby=sidebarPlotTitle>
-                                    <div .offcanvas-header.>
-                                        <h5 #sidebarPlotTitle .offcanvas-title>Plot
-                                    <div .offcanvas-body>
+                                <div #sidebarPlot .sidebar .card .text-bg-dark tabindex=-1 aria-labelledby=sidebarPlotTitle>
+                                    <div .sidebar-header .card-body>
+                                        <h5 #sidebarPlotTitle .card-title>Plot
+                                    <div .sidebar-body .card-body>
                                         <p>x and y selections
                             $# PLOT -------------------------------------------
                             <div .col-8>

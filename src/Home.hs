@@ -17,4 +17,6 @@ getHomeR = defaultLayout $ do
             <a href=@{MultiplyR}>AJAX multiplication
         <p>
             <a href=@{UploadR}>Upload a file
+        <p>
+            <a href=@{PlotR}>Upload a file and plot
     |]

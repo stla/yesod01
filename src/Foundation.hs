@@ -11,7 +11,7 @@ import Yesod.Core   ( mkYesodData
 import Yesod.Static ( staticFiles, Static )
 staticFiles "static"
 
-data App = App { getStatic :: Static }
+newtype App = App { getStatic :: Static }
 
 mkYesodData "App" $(parseRoutesFile "routes.yesodroutes")
 
