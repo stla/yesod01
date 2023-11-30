@@ -132,19 +132,26 @@ function papaParse(csv) {
                 console.log("Errors:", results.errors);
                 throw new Error("Something is wrong with this CSV file.");
             }
+            // Fill table -----------------------------------------------------
             let headers = "";
             for(let colname of results.meta.fields) {
                 headers += "<th>" + colname + "</th>";
             }
-            $('#table thead tr').append(headers);
+            $("#table thead tr").append(headers);
             let columns = [];
             for(let colname of results.meta.fields) {
                 columns.push({data: colname});
             }
-            $('#table').DataTable({
+            $("#table").DataTable({
                 data: results.data,
                 columns: columns
-            });              
+            });
+            // Fill x & y dropdowns --------------------------------------------
+            // ...
+            // AJAX : send {x:[...],y:[...]} to R and get base64 of the plot
+            // ...
+            // on change x or y, do AJAX
+            // ...
         }
     });
 }
@@ -184,42 +191,6 @@ $(function(){
         } else if(extension === "csv" || extension === "tsv") {
             papaParse(file);
         }
-        // --------------------------------------------------------------------
-        let fileReader = new FileReader(); 
-        fileReader.readAsDataURL(file);
-        fileReader.onload = function(e) {
-            let base64 = e.target.result.split(",")[1];
-            $.ajax({
-                contentType: "application/json; charset=UTF-8",
-                processData: false,
-                url: "@{PlotR}",
-                type: "PUT",
-                data: JSON.stringify({
-                    _filename: file.name, 
-                    _base64: base64
-                }),
-                success: function(string) {
-                    $("#spinner").hide();
-                    let error_base64 = string.split("*::*::*::*::*");
-                    let error = error_base64[0];
-                    if(error === "") {
-                        titleEl.textContent = "Success";
-                        resultEl.textContent = 
-                            "The report has been generated.";
-                        let base64 = error_base64[1];
-                        $('#download').attr("href", base64).show();
-                    } else {
-                        titleEl.textContent = "An error occured"
-                        resultEl.textContent = error;
-                    }
-                    myModal.show();
-                },
-                dataType: "text"
-            });
-        }; 
-        fileReader.onerror = function() {
-            alert(fileReader.error);
-        }; 
     });
 });
 |]
