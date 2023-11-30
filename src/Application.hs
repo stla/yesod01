@@ -11,5 +11,6 @@ import Add        ( getAddR )
 import Home       ( getHomeR )
 import Multiply   ( putOperationR, getMultiplyR )
 import Upload
+import Plot
 
 mkYesodDispatch "App" resourcesApp
