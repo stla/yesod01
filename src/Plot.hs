@@ -14,7 +14,7 @@ import Control.Monad                    ( when )
 import GHC.Float (plusDouble)
 
 data XY = XY {
-    _x :: [Double],
+    _x :: [String],
     _y :: [Double],
     _width :: Double
 } deriving (Show, Generic)
@@ -24,8 +24,11 @@ instance FromJSON XY
 quote :: String -> String
 quote x = "\\\"" ++ x ++ "\\\""
 
+triBackslahes :: String -> String
+triBackslahes string = subRegex (mkRegex "\"") string "\\\""
+
 toJsonXY :: XY -> String
-toJsonXY xy = "{" ++ quote "x" ++ ":" ++ show (_x xy) ++ "," ++
+toJsonXY xy = "{" ++ quote "x" ++ ":" ++ triBackslahes (show (_x xy)) ++ "," ++
                 quote "y" ++ ":" ++ show (_y xy) ++ "}"
 
 getPlotR :: Handler Html
@@ -137,12 +140,16 @@ function papaParse(csv) {
             // make the "dataframe" in columns format
             let df = results.data;
             let dfcolumns = {};
+            let dfx = {};
             for(let colname of colNames) {
                 let column = [];
+                let columnx = [];
                 for(let j = 0; j < df.length; j++) {
                     column.push(df[j][colname]);
+                    columnx.push(df[j][colname].toString());
                 }
                 dfcolumns[colname] = column;
+                dfx[colname] = columnx;
             }            
             // Fill x & y dropdowns --------------------------------------------
             let $selsXY = $("#selX, #selY");
@@ -166,24 +173,24 @@ function papaParse(csv) {
             let titleEl   = myModalEl.querySelector(".modal-title");
             let $selX = $("#selX");
             let $selY = $("#selY");
-            plot($selX, $selY, dfcolumns, colNames, titleEl, resultEl, myModal);
+            plot($selX, $selY, dfcolumns, dfx, colNames, titleEl, resultEl, myModal);
             // on change x or y, do plot
             $selsXY.on("change", function() {
-                plot($selX, $selY, dfcolumns, colNames, titleEl, resultEl, myModal);
+                plot($selX, $selY, dfcolumns, dfx, colNames, titleEl, resultEl, myModal);
             });
             // on resize, do plot
             $(window).on("resize", function() {
-                plot($selX, $selY, dfcolumns, colNames, titleEl, resultEl, myModal);
+                plot($selX, $selY, dfcolumns, dfx, colNames, titleEl, resultEl, myModal);
             });
         }
     });
 }
 
-function plot($selX, $selY, dfcolumns, colNames, titleEl, resultEl, myModal) {
+function plot($selX, $selY, dfcolumns, dfx, colNames, titleEl, resultEl, myModal) {
     $("#spinner").show();
     let xidx = $selX.val()
     let yidx = $selY.val();
-    let x = dfcolumns[colNames[xidx]];
+    let x = dfx[colNames[xidx]];
     let y = dfcolumns[colNames[yidx]];
     let width = $("#plot").width();
     if(width === 0) {
