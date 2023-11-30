@@ -174,20 +174,31 @@ function papaParse(csv) {
             let titleEl   = myModalEl.querySelector(".modal-title");
             let $selX = $("#selX");
             let $selY = $("#selY");
-            plot($selX, $selY, dfcolumns, dfx, colNames, titleEl, resultEl, myModal);
+            plot(
+                $selX, $selY, dfcolumns, dfx, colNames, 
+                titleEl, resultEl, myModal
+            );
             // on change x or y, do plot
             $selsXY.on("change", function() {
-                plot($selX, $selY, dfcolumns, dfx, colNames, titleEl, resultEl, myModal);
+                plot(
+                    $selX, $selY, dfcolumns, dfx, colNames, 
+                    titleEl, resultEl, myModal
+                );
             });
             // on resize, do plot
             $(window).on("resize", function() {
-                plot($selX, $selY, dfcolumns, dfx, colNames, titleEl, resultEl, myModal);
+                plot(
+                    $selX, $selY, dfcolumns, dfx, colNames, 
+                    titleEl, resultEl, myModal
+                );
             });
         }
     });
 }
 
-function plot($selX, $selY, dfcolumns, dfx, colNames, titleEl, resultEl, myModal) {
+function plot(
+    $selX, $selY, dfcolumns, dfx, colNames, titleEl, resultEl, myModal
+) {
     $("#spinner").show();
     let xidx = $selX.val()
     let yidx = $selY.val();
