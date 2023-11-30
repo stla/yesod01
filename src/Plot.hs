@@ -93,10 +93,10 @@ getPlotR = defaultLayout $ do
                                                 <br>
                                                 <label for=selY>Select the <em>y</em> column
                                                 <select .form-control #selY style=overflow-y:auto;>
-                            $# PLOT -------------------------------------------
-                            <div .col-8>
                                 <div #spinner .spinner-border .m-5 role=status style=display:none>
                                     <span .visually-hidden>Loading...
+                            $# PLOT -------------------------------------------
+                            <div .col-8>
                                 <img #plot width=100% height=400px>
     |]
     addScript $ StaticR jQuery_jquery_3_7_1_min_js
