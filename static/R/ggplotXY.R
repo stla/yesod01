@@ -14,7 +14,7 @@ gg <- ggplot(dat, aes(x = maybeNumeric(x), y = y)) +
   geom_point()
 
 png <- tempfile(fileext = ".png")
-ggsave(png, gg, width = w, height = 400, units = "px", dpi = "screen")
+ggsave(png, gg, width = w, height = h, units = "px", dpi = "print")
 
 base64 <- dataURI(file = png, mime = "image/png")
 cat(base64)

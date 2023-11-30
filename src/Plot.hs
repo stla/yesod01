@@ -16,7 +16,8 @@ import GHC.Float (plusDouble)
 data XY = XY {
     _x :: [String],
     _y :: [Double],
-    _width :: Double
+    _width :: Double,
+    _height :: Double
 } deriving (Show, Generic)
 
 instance FromJSON XY
@@ -194,9 +195,13 @@ function plot($selX, $selY, dfcolumns, dfx, colNames, titleEl, resultEl, myModal
     let y = dfcolumns[colNames[yidx]];
     let width = $("#plot").width();
     if(width === 0) {
-        width = 600;
+        width = 400;
     }
-    let XYw = JSON.stringify({_x: x, _y: y, _width: width});
+    let height = $("#plot").height();
+    if(height === 0) {
+        height = 400;
+    }    
+    let XYw = JSON.stringify({_x: x, _y: y, _width: width, _height = height});
     $.ajax({
         contentType: "application/json; charset=UTF-8",
         processData: false,
@@ -258,18 +263,20 @@ $(function(){
 quote' :: String -> String
 quote' x = "\"" ++ x ++ "\""
 
-rCommand :: String -> String -> String
-rCommand width jsonString = 
-    "w<-" ++ width ++ ";XY<-" ++ quote' jsonString ++ 
+rCommand :: String -> String -> String -> String
+rCommand width height jsonString = 
+    "w<-" ++ width ++ ";h<-" ++ height ++ 
+        ";XY<-" ++ quote' jsonString ++ 
         ";source(\"static/R/ggplotXY.R\")"
 
 putPlotR :: Handler String
 putPlotR = do
-    xyw <- requireCheckJsonBody :: Handler XY
-    let jsonString = toJsonXY xyw
-    let w = show (_width xyw)
+    xywh <- requireCheckJsonBody :: Handler XY
+    let jsonString = toJsonXY xywh
+    let w = show (_width xywh)
+    let h = show (_height xywh)
     (exitcode, stdout, stderr) <- liftIO $ 
-        readProcessWithExitCode "Rscript" ["-e", rCommand w jsonString] ""
+        readProcessWithExitCode "Rscript" ["-e", rCommand w h jsonString] ""
     liftIO $ print (exitcode, stdout, stderr)
     let base64 = stdout
     let err = if exitcode == ExitSuccess then "" else stderr
