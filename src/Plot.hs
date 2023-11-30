@@ -104,7 +104,12 @@ getPlotR = defaultLayout $ do
                                     <div .sidebar-header .card-body>
                                         <h5 #sidebarPlotTitle .card-title>Plot
                                     <div .sidebar-body .card-body>
-                                        <p>x and y selections
+                                        <fieldset #selectXY style=display:none;>
+                                            <label for=selX>Select the <em>x</em> column
+                                            <select .form-control #selX style=overflow-y:auto;>
+                                            <br>
+                                            <label for=selY>Select the <em>y</em> column
+                                            <select .form-control #selY style=overflow-y:auto;>
                             $# PLOT -------------------------------------------
                             <div .col-8>
                                 <div #spinner .spinner-border .m-5 role=status style=display:none>
@@ -146,7 +151,16 @@ function papaParse(csv) {
                 columns: columns
             });
             // Fill x & y dropdowns --------------------------------------------
-            // ...
+            let selsXY = $("#selX, #selY");
+            let ncolumns = results.meta.fields.length;
+            let size = ncolumns < 5 ? ncolumns : 5;
+            selsXY.attr("size", size);
+            $(results.meta.fields).each(function(idx, item) {
+                if(item != "") {
+                    selsXY.append($("<option>").attr("value", idx).text(item));
+                }
+            });
+            $("#selectXY").show();
             // AJAX : send {x:[...],y:[...]} to R and get base64 of the plot
             // ...
             // on change x or y, do AJAX
