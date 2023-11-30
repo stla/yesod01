@@ -67,6 +67,7 @@ getUploadR = defaultLayout $ do
                             <span #result>
                         <div .modal-footer>
                             <button type=button .btn .btn-secondary data-bs-dismiss=modal>Close
+            <img src=./static/images/haskell.png style=float:right;margin:10px;width:100px;>
             <div .container-fluid>
                 <h3>Upload a CSV file or a XLSX file.
                 <h5 .text-body-secondary>If you upload a XLSX file, the data from the first sheet will be extracted.
