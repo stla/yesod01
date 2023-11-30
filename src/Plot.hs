@@ -98,15 +98,19 @@ getPlotR = defaultLayout $ do
                                     <tbody>
                     $# PLOT TAB -----------------------------------------------
                     <div #plot-tab-pane .tab-pane .fade role=tabpanel aria-labelledby=plot-tab tabindex=0>
-
-
-
-                <br>
-                <div #spinner .spinner-border .m-5 role=status style=display:none>
-                    <span .visually-hidden>Loading...
-                <a #download .btn .btn-primary download=report.html style=display:none>Download report
-                <br>
-                <br>
+                        <div .row>
+                            $# SIDEBAR ----------------------------------------
+                            <div .col-4>
+                                <div #sidebarPlot .offcanvas .offcanvas-start .show .text-bg-dark tabindex=-1 aria-labelledby=sidebarPlotTitle>
+                                    <div .offcanvas-header.>
+                                        <h5 #sidebarPlotTitle .offcanvas-title>Plot
+                                    <div .offcanvas-body>
+                                        <p>x and y selections
+                            $# PLOT -------------------------------------------
+                            <div .col-8>
+                                <div #spinner .spinner-border .m-5 role=status style=display:none>
+                                    <span .visually-hidden>Loading...
+                                <img #plot width=400 height=auto>
     |]
     addScript $ StaticR jQuery_jquery_3_7_1_min_js
     addScript $ StaticR bootstrap_5_3_2_js_bootstrap_bundle_min_js
