@@ -79,28 +79,34 @@ getPlotR = defaultLayout $ do
                 <div #tabContent .tab-content>
                     $# DATA TAB -----------------------------------------------
                     <div #data-tab-pane .tab-pane .fade .show .active role=tabpanel aria-labelledby=data-tab tabindex=0>
+                        <div .row>
+                            $# SIDEBAR ----------------------------------------
+                            <div .col-4>
+                                <div #sidebarData .offcanvas .offcanvas-start .show .text-bg-dark tabindex=-1 aria-labelledby=sidebarDataTitle>
+                                    <div .offcanvas-header.>
+                                        <h5 #sidebarDataTitle .offcanvas-title>Upload data
+                                    <div .offcanvas-body>
+                                        <h6>Upload a CSV file or a XLSX file.
+                                        <h6 .text-body-secondary>If you upload a XLSX file, the data from the first sheet will be extracted.
+                                        <br>
+                                        <input #file type=file .form-control .btn .btn-info>
+                            $# TABLE ------------------------------------------
+                            <div .col-8>
+                                <table #table .table-striped .table-bordered .table-hover>
+                                    <thead>
+                                        <tr role=row>
+                                    <tbody>
                     $# PLOT TAB -----------------------------------------------
                     <div #plot-tab-pane .tab-pane .fade role=tabpanel aria-labelledby=plot-tab tabindex=0>
 
 
 
-                <h3>Upload a CSV file or a XLSX file.
-                <h5 .text-body-secondary>If you upload a XLSX file, the data from the first sheet will be extracted.
-                <h5>The data should contain at least two numeric columns.
-                <br>
-                <div .row>
-                    <div .col-12>
-                        <input #file type=file .form-control .btn .btn-info>
                 <br>
                 <div #spinner .spinner-border .m-5 role=status style=display:none>
                     <span .visually-hidden>Loading...
                 <a #download .btn .btn-primary download=report.html style=display:none>Download report
                 <br>
                 <br>
-                <table #table .table-striped .table-bordered .table-hover>
-                    <thead>
-                        <tr role=row>
-                    <tbody>
     |]
     addScript $ StaticR jQuery_jquery_3_7_1_min_js
     addScript $ StaticR bootstrap_5_3_2_js_bootstrap_bundle_min_js
