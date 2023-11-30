@@ -49,7 +49,7 @@ getPlotR = defaultLayout $ do
                             <span #result>
                         <div .modal-footer>
                             <button type=button .btn .btn-secondary data-bs-dismiss=modal>Close
-            <img src=./static/images/haskell.png style=float:right;margin:10px;width:100px;>
+            <img src=./static/images/haskell.png style=float:right;margin:5px;width:50px;>
             <div .container-fluid>
                 $# TABS -------------------------------------------------------
                 <ul .nav .nav-tabs role=tablist>
