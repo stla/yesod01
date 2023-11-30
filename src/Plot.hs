@@ -101,15 +101,16 @@ getPlotR = defaultLayout $ do
                             $# SIDEBAR ----------------------------------------
                             <div .col-4>
                                 <div #sidebarPlot .sidebar .card .text-bg-dark tabindex=-1 aria-labelledby=sidebarPlotTitle>
-                                    <div .sidebar-header .card-body>
-                                        <h5 #sidebarPlotTitle .card-title>Plot
-                                    <div .sidebar-body .card-body>
-                                        <fieldset #selectXY style=display:none;>
-                                            <label for=selX>Select the <em>x</em> column
-                                            <select .form-control #selX style=overflow-y:auto;>
-                                            <br>
-                                            <label for=selY>Select the <em>y</em> column
-                                            <select .form-control #selY style=overflow-y:auto;>
+                                    <div .card-body>
+                                        <div .sidebar-header>
+                                            <h5 #sidebarPlotTitle .card-title>Plot
+                                        <div .sidebar-body>
+                                            <fieldset #selectXY style=display:none;>
+                                                <label for=selX>Select the <em>x</em> column
+                                                <select .form-control #selX style=overflow-y:auto;>
+                                                <br>
+                                                <label for=selY>Select the <em>y</em> column
+                                                <select .form-control #selY style=overflow-y:auto;>
                             $# PLOT -------------------------------------------
                             <div .col-8>
                                 <div #spinner .spinner-border .m-5 role=status style=display:none>
@@ -136,30 +137,45 @@ function papaParse(csv) {
                 console.log("Errors:", results.errors);
                 throw new Error("Something is wrong with this CSV file.");
             }
+            let colNames = results.meta.fields;
             // Fill table -----------------------------------------------------
             let headers = "";
-            for(let colname of results.meta.fields) {
+            for(let colname of colNames) {
                 headers += "<th>" + colname + "</th>";
             }
             $("#table thead tr").append(headers);
             let columns = [];
-            for(let colname of results.meta.fields) {
+            for(let colname of colNames) {
                 columns.push({data: colname});
             }
             $("#table").DataTable({
                 data: results.data,
                 columns: columns
             });
+            // make the "dataframe" in columns format
+            let df = results.data;
+            let dfcolumns = {};
+            for(let colname of colNames) {
+                var column = [];
+                for(let j = 0; j < df.length; j++) {
+                    column.push(df[j][colname]);
+                }
+                dfcolumns[colname] = column;
+            }            
             // Fill x & y dropdowns --------------------------------------------
-            let selsXY = $("#selX, #selY");
-            let ncolumns = results.meta.fields.length;
+            let $selsXY = $("#selX, #selY");
+            let ncolumns = colNames.length;
             let size = ncolumns < 5 ? ncolumns : 5;
-            selsXY.attr("size", size);
-            $(results.meta.fields).each(function(idx, item) {
+            $selsXY.attr("size", size);
+            $(colNames).each(function(idx, item) {
                 if(item != "") {
-                    selsXY.append($("<option>").attr("value", idx).text(item));
+                    $selsXY.append($("<option>").attr("value", idx).text(item));
                 }
             });
+            let selX = document.querySelector("#selX");
+            let selY = document.querySelector("#selY");
+            selX.value = "0";
+            selY.value = "1";
             $("#selectXY").show();
             // AJAX : send {x:[...],y:[...]} to R and get base64 of the plot
             // ...
