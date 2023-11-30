@@ -7,44 +7,24 @@ import Foundation
 import Yesod.Core
 -- import Yesod.Form.Jquery ( YesodJquery (urlJqueryJs) )
 import GHC.Generics                     ( Generic )
-import qualified Data.ByteString        as B
-import qualified Data.ByteString.Base64 as B64
-import qualified Data.ByteString.Char8  as BC
-import qualified Data.Text as T
-import Network.Mime                     ( defaultMimeLookup )
-import System.IO.Temp                   ( getCanonicalTemporaryDirectory, createTempDirectory )
 import System.Process                   ( readProcessWithExitCode )
 import System.Exit                      ( ExitCode(ExitSuccess) )
 import Text.Regex                       ( mkRegex, subRegex )
 import Control.Monad                    ( when )
 
-replaceBackslahes :: String -> String
-replaceBackslahes string = subRegex (mkRegex "\\\\") string "/"
-
-base64ToFile :: String -> FilePath -> IO FilePath
-base64ToFile b64string fileName = do
-    let bstring = B64.decodeLenient (BC.pack b64string)
-    tmpDir <- getCanonicalTemporaryDirectory
-    dir <- createTempDirectory tmpDir "yesod"
-    let filePath = dir ++ "/" ++ fileName
-    B.writeFile filePath bstring 
-    return $ replaceBackslahes dir
-
-data File = File {
-    _filename :: String,
-    _base64   :: String
+data XY = XY {
+    _x :: [Double],
+    _y :: [Double]
 } deriving (Show, Generic)
 
-instance FromJSON File
+instance FromJSON XY
 
-b64FileToFile :: File -> IO FilePath
-b64FileToFile file = base64ToFile (_base64 file) (_filename file)
+quote :: String -> String
+quote x = "\"" ++ x ++ "\""
 
-fileToBase64 :: FilePath -> IO String
-fileToBase64 filename = do
-  file <- B.readFile filename
-  return $ "data:" ++ BC.unpack (defaultMimeLookup $ T.pack filename)
-             ++ ";base64," ++ BC.unpack (B64.encode file) 
+toJsonXY :: XY -> String
+toJsonXY xy = "{" ++ quote "x" ++ ":" ++ quote (show $ _x xy) ++ "," ++
+                quote "y" ++ ":" ++ quote (show $ _y xy) ++ "}"
 
 getPlotR :: Handler Html
 getPlotR = defaultLayout $ do
@@ -178,7 +158,32 @@ function papaParse(csv) {
             selY.value = "1";
             $("#selectXY").show();
             // AJAX : send {x:[...],y:[...]} to R and get base64 of the plot
-            // ...
+            $("#spinner").show();
+            let x = dfcolumns[colNames[0]];
+            let y = dfcolumns[colNames[1]];
+            let XY = JSON.stringify({_x: x, _y: y});
+            $.ajax({
+                contentType: "application/json; charset=UTF-8",
+                processData: false,
+                url: "@{PlotR}",
+                type: "PUT",
+                data: XY,
+                success: function(string) {
+                    $("#spinner").hide();
+                    let error_base64 = string.split("*::*::*::*::*");
+                    let error = error_base64[0];
+                    if(error === "") {
+                        let base64 = error_base64[1];
+                        $('#plot').attr("src", base64);
+                    } else {
+                        titleEl.textContent = "An error occured";
+                        resultEl.textContent = error;
+                        myModal.show();
+                    }
+                },
+                dataType: "text"
+            });
+
             // on change x or y, do AJAX
             // ...
         }
@@ -190,7 +195,6 @@ $(function(){
     const resultEl  = myModalEl.querySelector("#result");
     const titleEl   = myModalEl.querySelector(".modal-title");
     $("#file").on("change", function(e) {
-        $("#spinner").show();
         let file = e.target.files[0];
         let extension = file.name.split('.').pop().toLowerCase();
         // --------------------------------------------------------------------
@@ -224,26 +228,18 @@ $(function(){
 });
 |]
 
-quote :: String -> String
-quote x = "\"" ++ x ++ "\""
-
-rCommand :: FilePath -> String -> String
-rCommand outputDir fileName = 
-    "rmarkdown::render(\"static/R/report.Rmd\",output_dir=" ++ 
-        quote outputDir ++ ",params=list(upload=" ++ quote fileName ++ 
-        ",tmpDir=" ++ quote outputDir ++ "))"
+rCommand :: String -> String
+rCommand jsonString = 
+    "XY<-" ++ quote jsonString ++ ";source(\"static/R/ggplotXY.R\")"
 
 putPlotR :: Handler String
 putPlotR = do
-    file <- requireCheckJsonBody :: Handler File
-    let fileName = _filename file
-    dir <- liftIO $ b64FileToFile file 
+    xy <- requireCheckJsonBody :: Handler XY
+    let jsonString = toJsonXY xy
     (exitcode, stdout, stderr) <- liftIO $ 
-        readProcessWithExitCode "Rscript" ["-e", rCommand dir fileName] ""
+        readProcessWithExitCode "Rscript" ["-e", rCommand jsonString] ""
     liftIO $ print (exitcode, stdout, stderr)
-    when (exitcode /= ExitSuccess) $
-        liftIO $ writeFile (dir ++ "/report.html") "" 
-    base64 <- liftIO $ fileToBase64 (dir ++ "/report.html")
+    let base64 = stdout
     let err = if exitcode == ExitSuccess then "" else stderr
     let string = err ++ "*::*::*::*::*" ++ base64
     return string

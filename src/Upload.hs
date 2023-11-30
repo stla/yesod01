@@ -184,7 +184,7 @@ $(function(){
                         let base64 = error_base64[1];
                         $('#download').attr("href", base64).show();
                     } else {
-                        titleEl.textContent = "An error occured"
+                        titleEl.textContent = "An error occured";
                         resultEl.textContent = error;
                     }
                     myModal.show();
