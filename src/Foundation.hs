@@ -4,9 +4,10 @@
 {-# LANGUAGE ViewPatterns      #-}
 module Foundation where
 
-import Yesod.Core
-    ( mkYesodData, parseRoutesFile, Yesod, RenderRoute(renderRoute) )
--- import Yesod.Form.Jquery ( YesodJquery )
+import Yesod.Core   ( mkYesodData
+                    , parseRoutesFile
+                    , Yesod
+                    , RenderRoute(renderRoute) )
 import Yesod.Static ( staticFiles, Static )
 staticFiles "static"
 

@@ -127,9 +127,9 @@ $(function(){
     const myModal   = new bootstrap.Modal(myModalEl);
     const resultEl  = myModalEl.querySelector("#result");
     const titleEl   = myModalEl.querySelector(".modal-title");
-    $("#file").on("change", function() {
+    $("#file").on("change", function(e) {
         $("#spinner").show();
-        let file = this.files[0];
+        let file = e.target.files[0];
         let extension = file.name.split('.').pop().toLowerCase();
         // --------------------------------------------------------------------
         if(extension === "xlsx") {
@@ -137,7 +137,7 @@ $(function(){
 			reader.onload = function(e) {
 				let workbook;
 				try {
-					workbook = XLSX.read(reader.result, {
+					workbook = XLSX.read(e.target.result, {
 						type: "binary"
 					});
 				} catch(err) {
@@ -161,8 +161,8 @@ $(function(){
         // --------------------------------------------------------------------
         let fileReader = new FileReader(); 
         fileReader.readAsDataURL(file);
-        fileReader.onload = function() {
-            let base64 = fileReader.result.split(",")[1];
+        fileReader.onload = function(e) {
+            let base64 = e.target.result.split(",")[1];
             $.ajax({
                 contentType: "application/json; charset=UTF-8",
                 processData: false,
