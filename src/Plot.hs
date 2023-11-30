@@ -11,6 +11,7 @@ import System.Process                   ( readProcessWithExitCode )
 import System.Exit                      ( ExitCode(ExitSuccess) )
 import Text.Regex                       ( mkRegex, subRegex )
 import Control.Monad                    ( when )
+import GHC.Float (plusDouble)
 
 data XY = XY {
     _x :: [Double],
@@ -137,7 +138,7 @@ function papaParse(csv) {
             let df = results.data;
             let dfcolumns = {};
             for(let colname of colNames) {
-                var column = [];
+                let column = [];
                 for(let j = 0; j < df.length; j++) {
                     column.push(df[j][colname]);
                 }
@@ -159,42 +160,59 @@ function papaParse(csv) {
             selY.value = "1";
             $("#selectXY").show();
             // AJAX : send {x:[...],y:[...]} to R and get base64 of the plot
-            const myModalEl = document.getElementById("myModal");
-            const myModal   = new bootstrap.Modal(myModalEl);
-            const resultEl  = myModalEl.querySelector("#result");
-            const titleEl   = myModalEl.querySelector(".modal-title");
-            $("#spinner").show();
-            let x = dfcolumns[colNames[0]];
-            let y = dfcolumns[colNames[1]];
-            let width = $("#plot").width();
-            let XYw = JSON.stringify({_x: x, _y: y, _width: width});
-            $.ajax({
-                contentType: "application/json; charset=UTF-8",
-                processData: false,
-                url: "@{PlotR}",
-                type: "PUT",
-                data: XYw,
-                success: function(string) {
-                    $("#spinner").hide();
-                    let error_base64 = string.split("*::*::*::*::*");
-                    let error = error_base64[0];
-                    if(error === "") {
-                        let base64 = error_base64[1];
-                        $('#plot').attr("src", base64);
-                    } else {
-                        titleEl.textContent = "An error occured";
-                        resultEl.textContent = error;
-                        myModal.show();
-                    }
-                },
-                dataType: "text"
+            let myModalEl = document.getElementById("myModal");
+            let myModal   = new bootstrap.Modal(myModalEl);
+            let resultEl  = myModalEl.querySelector("#result");
+            let titleEl   = myModalEl.querySelector(".modal-title");
+            let $selX = $("#selX");
+            let $selY = $("#selY");
+            plot($selX, $selY, dfcolumns, colNames, titleEl, resultEl, myModal);
+            // on change x or y, do plot
+            $selsXY.on("change", function() {
+                plot($selX, $selY, dfcolumns, colNames, titleEl, resultEl, myModal);
             });
-
-            // on change x or y, do AJAX
-            // ...
+            // on resize, do plot
+            $(window).on("resize", function() {
+                plot($selX, $selY, dfcolumns, colNames, titleEl, resultEl, myModal);
+            });
         }
     });
 }
+
+function plot($selX, $selY, dfcolumns, colNames, titleEl, resultEl, myModal) {
+    $("#spinner").show();
+    let xidx = $selX.val()
+    let yidx = $selY.val();
+    let x = dfcolumns[colNames[xidx]];
+    let y = dfcolumns[colNames[yidx]];
+    let width = $("#plot").width();
+    if(width === 0) {
+        width = 600;
+    }
+    let XYw = JSON.stringify({_x: x, _y: y, _width: width});
+    $.ajax({
+        contentType: "application/json; charset=UTF-8",
+        processData: false,
+        url: "@{PlotR}",
+        type: "PUT",
+        data: XYw,
+        success: function(string) {
+            $("#spinner").hide();
+            let error_base64 = string.split("*::*::*::*::*");
+            let error = error_base64[0];
+            if(error === "") {
+                let base64 = error_base64[1];
+                $('#plot').attr("src", base64);
+            } else {
+                titleEl.textContent = "An error occured";
+                resultEl.textContent = error;
+                myModal.show();
+            }
+        },
+        dataType: "text"
+    });
+}
+
 $(function(){
     $("#file").on("change", function(e) {
         let file = e.target.files[0];
