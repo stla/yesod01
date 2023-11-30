@@ -20,11 +20,11 @@ data XY = XY {
 instance FromJSON XY
 
 quote :: String -> String
-quote x = "\"" ++ x ++ "\""
+quote x = "\\\"" ++ x ++ "\\\""
 
 toJsonXY :: XY -> String
-toJsonXY xy = "{" ++ quote "x" ++ ":" ++ quote (show $ _x xy) ++ "," ++
-                quote "y" ++ ":" ++ quote (show $ _y xy) ++ "}"
+toJsonXY xy = "{" ++ quote "x" ++ ":" ++ show (_x xy) ++ "," ++
+                quote "y" ++ ":" ++ show (_y xy) ++ "}"
 
 getPlotR :: Handler Html
 getPlotR = defaultLayout $ do
@@ -95,7 +95,7 @@ getPlotR = defaultLayout $ do
                             <div .col-8>
                                 <div #spinner .spinner-border .m-5 role=status style=display:none>
                                     <span .visually-hidden>Loading...
-                                <img #plot width=400 height=auto>
+                                <img #plot width=100% height=400px>
     |]
     addScript $ StaticR jQuery_jquery_3_7_1_min_js
     addScript $ StaticR bootstrap_5_3_2_js_bootstrap_bundle_min_js
@@ -158,6 +158,10 @@ function papaParse(csv) {
             selY.value = "1";
             $("#selectXY").show();
             // AJAX : send {x:[...],y:[...]} to R and get base64 of the plot
+            const myModalEl = document.getElementById("myModal");
+            const myModal   = new bootstrap.Modal(myModalEl);
+            const resultEl  = myModalEl.querySelector("#result");
+            const titleEl   = myModalEl.querySelector(".modal-title");
             $("#spinner").show();
             let x = dfcolumns[colNames[0]];
             let y = dfcolumns[colNames[1]];
@@ -190,10 +194,6 @@ function papaParse(csv) {
     });
 }
 $(function(){
-    const myModalEl = document.getElementById("myModal");
-    const myModal   = new bootstrap.Modal(myModalEl);
-    const resultEl  = myModalEl.querySelector("#result");
-    const titleEl   = myModalEl.querySelector(".modal-title");
     $("#file").on("change", function(e) {
         let file = e.target.files[0];
         let extension = file.name.split('.').pop().toLowerCase();
@@ -228,9 +228,12 @@ $(function(){
 });
 |]
 
+quote' :: String -> String
+quote' x = "\"" ++ x ++ "\""
+
 rCommand :: String -> String
 rCommand jsonString = 
-    "XY<-" ++ quote jsonString ++ ";source(\"static/R/ggplotXY.R\")"
+    "XY<-" ++ quote' jsonString ++ ";source(\"static/R/ggplotXY.R\")"
 
 putPlotR :: Handler String
 putPlotR = do
