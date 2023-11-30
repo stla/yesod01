@@ -9,7 +9,7 @@ gg <- ggplot(dat, aes(x = x, y = y)) +
   geom_point()
 
 png <- tempfile(fileext = ".png")
-ggsave(png, gg)
+ggsave(png, gg, width = w, height = 400, units = "px", dpi = "screen")
 
 base64 <- dataURI(file = png, mime = "image/png")
 cat(base64)

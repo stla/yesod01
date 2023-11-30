@@ -14,7 +14,8 @@ import Control.Monad                    ( when )
 
 data XY = XY {
     _x :: [Double],
-    _y :: [Double]
+    _y :: [Double],
+    _width :: Double
 } deriving (Show, Generic)
 
 instance FromJSON XY
@@ -165,13 +166,14 @@ function papaParse(csv) {
             $("#spinner").show();
             let x = dfcolumns[colNames[0]];
             let y = dfcolumns[colNames[1]];
-            let XY = JSON.stringify({_x: x, _y: y});
+            let width = $("#plot").width();
+            let XYw = JSON.stringify({_x: x, _y: y, _width: width});
             $.ajax({
                 contentType: "application/json; charset=UTF-8",
                 processData: false,
                 url: "@{PlotR}",
                 type: "PUT",
-                data: XY,
+                data: XYw,
                 success: function(string) {
                     $("#spinner").hide();
                     let error_base64 = string.split("*::*::*::*::*");
@@ -231,16 +233,18 @@ $(function(){
 quote' :: String -> String
 quote' x = "\"" ++ x ++ "\""
 
-rCommand :: String -> String
-rCommand jsonString = 
-    "XY<-" ++ quote' jsonString ++ ";source(\"static/R/ggplotXY.R\")"
+rCommand :: String -> String -> String
+rCommand width jsonString = 
+    "w<-" ++ width ++ ";XY<-" ++ quote' jsonString ++ 
+        ";source(\"static/R/ggplotXY.R\")"
 
 putPlotR :: Handler String
 putPlotR = do
-    xy <- requireCheckJsonBody :: Handler XY
-    let jsonString = toJsonXY xy
+    xyw <- requireCheckJsonBody :: Handler XY
+    let jsonString = toJsonXY xyw
+    let w = show (_width xyw)
     (exitcode, stdout, stderr) <- liftIO $ 
-        readProcessWithExitCode "Rscript" ["-e", rCommand jsonString] ""
+        readProcessWithExitCode "Rscript" ["-e", rCommand w jsonString] ""
     liftIO $ print (exitcode, stdout, stderr)
     let base64 = stdout
     let err = if exitcode == ExitSuccess then "" else stderr
