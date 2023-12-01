@@ -164,7 +164,28 @@ function papaParse(csv) {
                 }
                 dfcolumns[colname] = column;
                 dfx[colname] = columnx;
-            }            
+            }
+            // Data summary ----------------------------------------------------
+            divDataSummary = document.getElementById("dataSummary");
+            $.ajax({
+                contentType: "application/json; charset=UTF-8",
+                processData: false,
+                url: "@{SummaryR}",
+                type: "PUT",
+                data: JSON.stringify(JSON.stringify(df)),
+                success: function(string) {
+                    $("#spinner").hide();
+                    let error_html = string.split("*::*::*::*::*");
+                    let error = error_html[0];
+                    if(error === "") {
+                        let html = error_html[1];
+                        divDataSummary.innerHTML = html;
+                    } else {
+                        divDataSummary.innerHTML = "An error occured";
+                    }
+                },
+                dataType: "text"
+            });
             // Fill x & y dropdowns --------------------------------------------
             let $selsXY = $("#selX, #selY");
             let ncolumns = colNames.length;
