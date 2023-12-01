@@ -85,7 +85,7 @@ getPlotR = defaultLayout $ do
                                         <tr role=row>
                                     <tbody>
                     $# DATA SUMMARY TAB ---------------------------------------
-                    <div #data-summary-pane .tab-pane .fade role=tabpanel aria-labelledby=summary-tab tabindex=0>
+                    <div #summary-tab-pane .tab-pane .fade role=tabpanel aria-labelledby=summary-tab tabindex=0>
                         <div .row>
                             $# SIDEBAR ----------------------------------------
                             <div .col-4>
@@ -166,7 +166,7 @@ function papaParse(csv) {
                 dfx[colname] = columnx;
             }
             // Data summary ----------------------------------------------------
-            divDataSummary = document.getElementById("dataSummary");
+            let divDataSummary = document.getElementById("dataSummary");
             $.ajax({
                 contentType: "application/json; charset=UTF-8",
                 processData: false,
@@ -174,7 +174,6 @@ function papaParse(csv) {
                 type: "PUT",
                 data: JSON.stringify(JSON.stringify(df)),
                 success: function(string) {
-                    $("#spinner").hide();
                     let error_html = string.split("*::*::*::*::*");
                     let error = error_html[0];
                     if(error === "") {
@@ -208,10 +207,10 @@ function papaParse(csv) {
             let titleEl   = myModalEl.querySelector(".modal-title");
             let $selX = $("#selX");
             let $selY = $("#selY");
-            plot(
+/*            plot(
                 $selX, $selY, dfcolumns, dfx, colNames, 
                 titleEl, resultEl, myModal
-            );
+            ); */
             // on change x or y, do plot
             $selsXY.on("change", function() {
                 plot(
@@ -246,7 +245,7 @@ function plot(
     if(height === 0) {
         height = 400;
     }    
-    let XYw = JSON.stringify({_x: x, _y: y, _width: width, _height = height});
+    let XYw = JSON.stringify({_x: x, _y: y, _width: width, _height: height});
     $.ajax({
         contentType: "application/json; charset=UTF-8",
         processData: false,
@@ -316,7 +315,7 @@ rCommand width height jsonString =
 
 rCommand' :: String -> String
 rCommand' jsonString = 
-        "jsonData<-" ++ quote' jsonString ++ 
+        "jsonData<-" ++ quote' (triBackslahes jsonString) ++ 
         ";source(\"static/R/gtSummary.R\")"
 
 putPlotR :: Handler String

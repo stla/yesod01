@@ -1,3 +1,4 @@
+library(gt)
 library(gtExtras)
 library(jsonlite)
 
