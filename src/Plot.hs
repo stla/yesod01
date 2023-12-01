@@ -13,6 +13,18 @@ import Text.Regex                       ( mkRegex, subRegex )
 import Control.Monad                    ( when )
 import GHC.Float (plusDouble)
 import GHC.IO.FD (stdout)
+import System.IO.Temp                   ( getCanonicalTemporaryDirectory, createTempDirectory )
+
+replaceBackslahes :: String -> String
+replaceBackslahes string = subRegex (mkRegex "\\\\") string "/"
+
+writeTempFile :: String -> FilePath -> IO FilePath
+writeTempFile string fileName = do
+    tmpDir <- getCanonicalTemporaryDirectory
+    dir <- createTempDirectory tmpDir "yesod"
+    let filePath = dir ++ "/" ++ fileName
+    writeFile filePath string 
+    return $ replaceBackslahes filePath
 
 data XY = XY {
     _x :: [String],
@@ -92,6 +104,8 @@ getPlotR = defaultLayout $ do
                                 <div .sidebar .card .text-bg-dark tabindex=-1 aria-labelledby=sidebarSummaryTitle>
                                     <div .sidebar-header .card-body>
                                         <h5 #sidebarSummaryTitle .card-title>Data summary
+                                <div #spinner2 .spinner-border .m-5 role=status style=display:none>
+                                    <span .visually-hidden>Loading...
                             $# SUMMARY TABLE ----------------------------------
                             <div .col-8 #dataSummary>
                     $# PLOT TAB -----------------------------------------------
@@ -167,6 +181,7 @@ function papaParse(csv) {
             }
             // Data summary ----------------------------------------------------
             let divDataSummary = document.getElementById("dataSummary");
+            $("#spinner2").show();
             $.ajax({
                 contentType: "application/json; charset=UTF-8",
                 processData: false,
@@ -174,13 +189,15 @@ function papaParse(csv) {
                 type: "PUT",
                 data: JSON.stringify(JSON.stringify(df)),
                 success: function(string) {
+                    $("#spinner2").hide();
                     let error_html = string.split("*::*::*::*::*");
                     let error = error_html[0];
                     if(error === "") {
                         let html = error_html[1];
                         divDataSummary.innerHTML = html;
                     } else {
-                        divDataSummary.innerHTML = "An error occured";
+                        divDataSummary.innerHTML = 
+                            "An error occured: <br>" + error;
                     }
                 },
                 dataType: "text"
@@ -207,10 +224,10 @@ function papaParse(csv) {
             let titleEl   = myModalEl.querySelector(".modal-title");
             let $selX = $("#selX");
             let $selY = $("#selY");
-/*            plot(
+            plot(
                 $selX, $selY, dfcolumns, dfx, colNames, 
                 titleEl, resultEl, myModal
-            ); */
+            );
             // on change x or y, do plot
             $selsXY.on("change", function() {
                 plot(
@@ -313,9 +330,9 @@ rCommand width height jsonString =
         ";XY<-" ++ quote' jsonString ++ 
         ";source(\"static/R/ggplotXY.R\")"
 
-rCommand' :: String -> String
-rCommand' jsonString = 
-        "jsonData<-" ++ quote' (triBackslahes jsonString) ++ 
+rCommand' :: FilePath -> String
+rCommand' file = 
+        "jsonFile<-" ++ quote' file ++ 
         ";source(\"static/R/gtSummary.R\")"
 
 putPlotR :: Handler String
@@ -326,7 +343,7 @@ putPlotR = do
     let h = show (_height xywh)
     (exitcode, stdout, stderr) <- liftIO $ 
         readProcessWithExitCode "Rscript" ["-e", rCommand w h jsonString] ""
-    liftIO $ print (exitcode, stdout, stderr)
+    -- liftIO $ print (exitcode, stdout, stderr)
     let base64 = stdout
     let err = if exitcode == ExitSuccess then "" else stderr
     let string = err ++ "*::*::*::*::*" ++ base64
@@ -335,11 +352,15 @@ putPlotR = do
 putSummaryR :: Handler String
 putSummaryR = do
     jsonData <- requireCheckJsonBody :: Handler String
-    liftIO $ print jsonData
+    jsonFile <- liftIO $ writeTempFile jsonData "data.json"
     (exitcode, stdout, stderr) <- liftIO $ 
-        readProcessWithExitCode "Rscript" ["-e", rCommand' jsonData] ""
+        readProcessWithExitCode "Rscript" ["-e", rCommand' jsonFile] ""
     liftIO $ print (exitcode, stdout, stderr)
-    let html = stdout
-    let err = if exitcode == ExitSuccess then "" else stderr
+    let success = exitcode == ExitSuccess && stdout /= ""
+    let htmlFile = if success 
+        then stdout else jsonFile
+    html <- liftIO $ readFile htmlFile
+    let err = if success 
+        then "" else stderr
     let string = err ++ "*::*::*::*::*" ++ html
     return string    
