@@ -12,6 +12,7 @@ import System.Exit                      ( ExitCode(ExitSuccess) )
 import Text.Regex                       ( mkRegex, subRegex )
 import Control.Monad                    ( when )
 import GHC.Float (plusDouble)
+import GHC.IO.FD (stdout)
 
 data XY = XY {
     _x :: [String],
@@ -280,6 +281,11 @@ rCommand width height jsonString =
         ";XY<-" ++ quote' jsonString ++ 
         ";source(\"static/R/ggplotXY.R\")"
 
+rCommand' :: String -> String
+rCommand' jsonString = 
+        "jsonData<-" ++ quote' jsonString ++ 
+        ";source(\"static/R/gtSummary.R\")"
+
 putPlotR :: Handler String
 putPlotR = do
     xywh <- requireCheckJsonBody :: Handler XY
@@ -293,3 +299,15 @@ putPlotR = do
     let err = if exitcode == ExitSuccess then "" else stderr
     let string = err ++ "*::*::*::*::*" ++ base64
     return string
+
+putSummaryR :: Handler String
+putSummaryR = do
+    jsonData <- requireCheckJsonBody :: Handler String
+    liftIO $ print jsonData
+    (exitcode, stdout, stderr) <- liftIO $ 
+        readProcessWithExitCode "Rscript" ["-e", rCommand' jsonData] ""
+    liftIO $ print (exitcode, stdout, stderr)
+    let html = stdout
+    let err = if exitcode == ExitSuccess then "" else stderr
+    let string = err ++ "*::*::*::*::*" ++ html
+    return string    

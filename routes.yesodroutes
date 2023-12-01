@@ -6,3 +6,4 @@
 /upload        UploadR    GET
 /file          FileR      PUT
 /plot          PlotR      GET    PUT
+/summary       SummaryR   PUT
