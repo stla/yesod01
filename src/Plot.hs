@@ -61,6 +61,8 @@ getPlotR = defaultLayout $ do
                     <li .nav-item role=presentation>
                         <button #data-tab .nav-link .active data-bs-toggle=tab data-bs-target=#data-tab-pane type=button role=tab aria-controls=data-tab-pane aria-selected=true>Data
                     <li .nav-item role=presentation>
+                        <button #summary-tab .nav-link data-bs-toggle=tab data-bs-target=#summary-tab-pane type=button role=tab aria-controls=summary-tab-pane aria-selected=false>Data summary
+                    <li .nav-item role=presentation>
                         <button #plot-tab .nav-link data-bs-toggle=tab data-bs-target=#plot-tab-pane type=button role=tab aria-controls=plot-tab-pane aria-selected=false>Plot
                 $# TABS CONTENTS ----------------------------------------------
                 <div #tabContent .tab-content>
@@ -82,6 +84,16 @@ getPlotR = defaultLayout $ do
                                     <thead>
                                         <tr role=row>
                                     <tbody>
+                    $# DATA SUMMARY TAB ---------------------------------------
+                    <div #data-summary-pane .tab-pane .fade role=tabpanel aria-labelledby=summary-tab tabindex=0>
+                        <div .row>
+                            $# SIDEBAR ----------------------------------------
+                            <div .col-4>
+                                <div .sidebar .card .text-bg-dark tabindex=-1 aria-labelledby=sidebarSummaryTitle>
+                                    <div .sidebar-header .card-body>
+                                        <h5 #sidebarSummaryTitle .card-title>Data summary
+                            $# SUMMARY TABLE ----------------------------------
+                            <div .col-8 #dataSummary>
                     $# PLOT TAB -----------------------------------------------
                     <div #plot-tab-pane .tab-pane .fade role=tabpanel aria-labelledby=plot-tab tabindex=0>
                         <div .row>
